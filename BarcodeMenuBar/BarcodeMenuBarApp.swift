@@ -14,6 +14,22 @@ struct BarcodeMenuBarApp: App {
 }
 
 final class AppState: ObservableObject {
+    enum SizePreset: String, CaseIterable {
+        case s
+        case m
+        case l
+
+        var title: String { rawValue.uppercased() }
+
+        var scaleMultiplier: CGFloat {
+            switch self {
+            case .s: return 0.8
+            case .m: return 1.0
+            case .l: return 1.3
+            }
+        }
+    }
+
     @Published var barcodeString: String = ""
     @Published var barcodeImage: NSImage? = nil
     @Published var showQRCode: Bool = false
@@ -21,6 +37,7 @@ final class AppState: ObservableObject {
     @Published var shortcutDisplay: String = ""
     @Published var isRecordingShortcut: Bool = false
     @Published var recordingHint: String = ""
+    @Published var sizePreset: SizePreset = .m
     var startRecordingShortcut: (() -> Void)?
 
     func updateFromClipboard() {
@@ -55,9 +72,9 @@ final class AppState: ObservableObject {
     private func generateImage(for value: String) -> NSImage? {
         let rawImage: NSImage?
         if showQRCode {
-            rawImage = BarcodeGenerator.generateQRCode(from: value)
+            rawImage = BarcodeGenerator.generateQRCode(from: value, sizeMultiplier: sizePreset.scaleMultiplier)
         } else {
-            rawImage = BarcodeGenerator.generateCode128(from: value)
+            rawImage = BarcodeGenerator.generateCode128(from: value, sizeMultiplier: sizePreset.scaleMultiplier)
         }
         guard let rawImage else { return nil }
         return BarcodeGenerator.composeImage(rawImage: rawImage, text: value)
@@ -294,6 +311,22 @@ struct ContentView: View {
                     .scaledToFit()
                     .frame(width: 280, height: appState.showQRCode ? 220 : 90)
                     .padding(.vertical, 4)
+
+                HStack(spacing: 8) {
+                    Text("Size")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+
+                    ForEach(AppState.SizePreset.allCases, id: \.rawValue) { preset in
+                        Button(preset.title) {
+                            appState.sizePreset = preset
+                            appState.refreshImage()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                        .tint(appState.sizePreset == preset ? .accentColor : .gray)
+                    }
+                }
             } else {
                 Text("No barcode")
                     .foregroundStyle(.secondary)
@@ -469,28 +502,32 @@ enum HotKeyFormatter {
 }
 
 enum BarcodeGenerator {
-    static func generateCode128(from string: String) -> NSImage? {
+    static func generateCode128(from string: String, sizeMultiplier: CGFloat = 1.0) -> NSImage? {
         guard let data = string.data(using: .ascii, allowLossyConversion: true) else { return nil }
         guard let filter = CIFilter(name: "CICode128BarcodeGenerator") else { return nil }
         filter.setValue(data, forKey: "inputMessage")
         filter.setValue(7.0, forKey: "inputQuietSpace")
         guard let outputImage = filter.outputImage else { return nil }
 
-        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: 3.0, y: 3.0))
+        let baseScale: CGFloat = 3.0
+        let finalScale = baseScale * sizeMultiplier
+        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: finalScale, y: finalScale))
         let rep = NSCIImageRep(ciImage: scaledImage)
         let nsImage = NSImage(size: rep.size)
         nsImage.addRepresentation(rep)
         return nsImage
     }
 
-    static func generateQRCode(from string: String) -> NSImage? {
+    static func generateQRCode(from string: String, sizeMultiplier: CGFloat = 1.0) -> NSImage? {
         guard let data = string.data(using: .utf8) else { return nil }
         guard let filter = CIFilter(name: "CIQRCodeGenerator") else { return nil }
         filter.setValue(data, forKey: "inputMessage")
         filter.setValue("M", forKey: "inputCorrectionLevel")
         guard let outputImage = filter.outputImage else { return nil }
 
-        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: 8.0, y: 8.0))
+        let baseScale: CGFloat = 8.0
+        let finalScale = baseScale * sizeMultiplier
+        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: finalScale, y: finalScale))
         let rep = NSCIImageRep(ciImage: scaledImage)
         let nsImage = NSImage(size: rep.size)
         nsImage.addRepresentation(rep)
