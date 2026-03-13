@@ -40,6 +40,7 @@ final class AppState: ObservableObject {
     @Published var sizePreset: SizePreset = .m
     var startRecordingShortcut: (() -> Void)?
     var updatePopoverSize: (() -> Void)?
+    var quitApp: (() -> Void)?
 
     func updateFromClipboard() {
         let pasteboard = NSPasteboard.general
@@ -119,6 +120,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         }
         appState.updatePopoverSize = { [weak self] in
             self?.requestPopoverResize()
+        }
+        appState.quitApp = {
+            NSApplication.shared.terminate(nil)
         }
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -355,6 +359,7 @@ struct ContentView: View {
                     .interpolation(.none)
                     .scaledToFit()
                     .frame(width: imageFrameWidth, height: imageFrameHeight)
+                    .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 4)
 
                 HStack(spacing: 8) {
@@ -417,9 +422,19 @@ struct ContentView: View {
                     .cornerRadius(6)
             }
 
-            Text(appState.statusMessage)
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
+            HStack(spacing: 8) {
+                Button("Quit") {
+                    appState.quitApp?()
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
+
+                Text(appState.statusMessage)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+
+                Spacer(minLength: 0)
+            }
         }
         .padding(16)
         .frame(width: contentWidth)
