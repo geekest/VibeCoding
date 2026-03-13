@@ -14,6 +14,22 @@ struct BarcodeMenuBarApp: App {
 }
 
 final class AppState: ObservableObject {
+    enum SizePreset: String, CaseIterable {
+        case s
+        case m
+        case l
+
+        var title: String { rawValue.uppercased() }
+
+        var scaleMultiplier: CGFloat {
+            switch self {
+            case .s: return 0.8
+            case .m: return 1.0
+            case .l: return 1.3
+            }
+        }
+    }
+
     @Published var barcodeString: String = ""
     @Published var barcodeImage: NSImage? = nil
     @Published var showQRCode: Bool = false
@@ -21,7 +37,9 @@ final class AppState: ObservableObject {
     @Published var shortcutDisplay: String = ""
     @Published var isRecordingShortcut: Bool = false
     @Published var recordingHint: String = ""
+    @Published var sizePreset: SizePreset = .m
     var startRecordingShortcut: (() -> Void)?
+    var updatePopoverSize: (() -> Void)?
 
     func updateFromClipboard() {
         let pasteboard = NSPasteboard.general
@@ -55,9 +73,9 @@ final class AppState: ObservableObject {
     private func generateImage(for value: String) -> NSImage? {
         let rawImage: NSImage?
         if showQRCode {
-            rawImage = BarcodeGenerator.generateQRCode(from: value)
+            rawImage = BarcodeGenerator.generateQRCode(from: value, sizeMultiplier: sizePreset.scaleMultiplier)
         } else {
-            rawImage = BarcodeGenerator.generateCode128(from: value)
+            rawImage = BarcodeGenerator.generateCode128(from: value, sizeMultiplier: sizePreset.scaleMultiplier)
         }
         guard let rawImage else { return nil }
         return BarcodeGenerator.composeImage(rawImage: rawImage, text: value)
@@ -79,6 +97,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private let appState = AppState()
     private let popover = NSPopover()
     private var statusItem: NSStatusItem!
+    private var hostingController: NSHostingController<AnyView>?
     private var recordingLocalMonitor: Any?
     private var recordingGlobalMonitor: Any?
     private var popoverLocalMonitor: Any?
@@ -91,9 +110,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
         popover.behavior = .applicationDefined
         popover.delegate = self
-        popover.contentViewController = NSHostingController(rootView: ContentView().environmentObject(appState))
+        let rootView = AnyView(ContentView().environmentObject(appState))
+        let hostingController = NSHostingController(rootView: rootView)
+        self.hostingController = hostingController
+        popover.contentViewController = hostingController
         appState.startRecordingShortcut = { [weak self] in
             self?.startRecordingShortcut()
+        }
+        appState.updatePopoverSize = { [weak self] in
+            self?.requestPopoverResize()
         }
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
@@ -126,6 +151,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
         } else if let button = statusItem.button {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             appState.updateFromClipboard()
+            requestPopoverResize()
             installPopoverMonitors()
         }
     }
@@ -186,9 +212,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
     private func ensurePopoverVisible() {
         if popover.isShown == false, let button = statusItem.button {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            requestPopoverResize()
             installPopoverMonitors()
         }
         NSApplication.shared.activate(ignoringOtherApps: true)
+    }
+
+    private func requestPopoverResize() {
+        DispatchQueue.main.async { [weak self] in
+            self?.resizePopoverToFit()
+        }
+    }
+
+    private func resizePopoverToFit() {
+        guard popover.isShown else { return }
+        guard let hostingController else { return }
+        hostingController.view.layoutSubtreeIfNeeded()
+        let fittingSize = hostingController.view.fittingSize
+        guard fittingSize.width.isFinite,
+              fittingSize.height.isFinite,
+              fittingSize.width > 0,
+              fittingSize.height > 0 else { return }
+        popover.contentSize = fittingSize
     }
 
     private func closePopover() {
@@ -282,6 +327,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
 
+    private var contentWidth: CGFloat {
+        let baseWidth: CGFloat = 320
+        let outerPadding: CGFloat = 16 * 2
+        let baseImageWidth: CGFloat = 280
+        return max(baseWidth, baseImageWidth * appState.sizePreset.scaleMultiplier + outerPadding)
+    }
+
+    private var imageFrameWidth: CGFloat {
+        let baseImageWidth: CGFloat = 280
+        return baseImageWidth * appState.sizePreset.scaleMultiplier
+    }
+
+    private var imageFrameHeight: CGFloat {
+        let baseHeight: CGFloat = appState.showQRCode ? 220 : 90
+        return baseHeight * appState.sizePreset.scaleMultiplier
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(appState.showQRCode ? "QR Code" : "Code 128 Barcode")
@@ -292,8 +354,25 @@ struct ContentView: View {
                     .resizable()
                     .interpolation(.none)
                     .scaledToFit()
-                    .frame(width: 280, height: appState.showQRCode ? 220 : 90)
+                    .frame(width: imageFrameWidth, height: imageFrameHeight)
                     .padding(.vertical, 4)
+
+                HStack(spacing: 8) {
+                    Text("Size")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+
+                    ForEach(AppState.SizePreset.allCases, id: \.rawValue) { preset in
+                        Button(preset.title) {
+                            appState.sizePreset = preset
+                            appState.refreshImage()
+                            appState.updatePopoverSize?()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.small)
+                        .tint(appState.sizePreset == preset ? .accentColor : .gray)
+                    }
+                }
             } else {
                 Text("No barcode")
                     .foregroundStyle(.secondary)
@@ -309,6 +388,7 @@ struct ContentView: View {
                 Button(appState.showQRCode ? "Show Code 128" : "Show QR") {
                     appState.showQRCode.toggle()
                     appState.refreshImage()
+                    appState.updatePopoverSize?()
                 }
 
                 Button("Copy Image") {
@@ -342,7 +422,10 @@ struct ContentView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(16)
-        .frame(width: 320)
+        .frame(width: contentWidth)
+        .onAppear {
+            appState.updatePopoverSize?()
+        }
     }
 }
 
@@ -469,28 +552,32 @@ enum HotKeyFormatter {
 }
 
 enum BarcodeGenerator {
-    static func generateCode128(from string: String) -> NSImage? {
+    static func generateCode128(from string: String, sizeMultiplier: CGFloat = 1.0) -> NSImage? {
         guard let data = string.data(using: .ascii, allowLossyConversion: true) else { return nil }
         guard let filter = CIFilter(name: "CICode128BarcodeGenerator") else { return nil }
         filter.setValue(data, forKey: "inputMessage")
         filter.setValue(7.0, forKey: "inputQuietSpace")
         guard let outputImage = filter.outputImage else { return nil }
 
-        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: 3.0, y: 3.0))
+        let baseScale: CGFloat = 3.0
+        let finalScale = baseScale * sizeMultiplier
+        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: finalScale, y: finalScale))
         let rep = NSCIImageRep(ciImage: scaledImage)
         let nsImage = NSImage(size: rep.size)
         nsImage.addRepresentation(rep)
         return nsImage
     }
 
-    static func generateQRCode(from string: String) -> NSImage? {
+    static func generateQRCode(from string: String, sizeMultiplier: CGFloat = 1.0) -> NSImage? {
         guard let data = string.data(using: .utf8) else { return nil }
         guard let filter = CIFilter(name: "CIQRCodeGenerator") else { return nil }
         filter.setValue(data, forKey: "inputMessage")
         filter.setValue("M", forKey: "inputCorrectionLevel")
         guard let outputImage = filter.outputImage else { return nil }
 
-        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: 8.0, y: 8.0))
+        let baseScale: CGFloat = 8.0
+        let finalScale = baseScale * sizeMultiplier
+        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: finalScale, y: finalScale))
         let rep = NSCIImageRep(ciImage: scaledImage)
         let nsImage = NSImage(size: rep.size)
         nsImage.addRepresentation(rep)

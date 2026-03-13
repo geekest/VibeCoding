@@ -63,3 +63,4 @@ fastlane/test_output
 BarcodeMenuBar/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .DS_Store
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+.vscode/settings.json
