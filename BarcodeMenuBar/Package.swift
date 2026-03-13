@@ -12,7 +12,10 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "BarcodeMenuBar",
-            path: "Sources/BarcodeMenuBar"
+            path: ".",
+            sources: [
+                "BarcodeMenuBarApp.swift"
+            ]
         )
     ]
 )
