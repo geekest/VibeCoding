@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InvestView 预览版</title>
+    <style>
+      :root {
+        --bg: #070b12;
+        --card: #111827;
+        --border: #1f2937;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --buy: #10b981;
+        --hold: #f59e0b;
+        --sell: #f43f5e;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        color: var(--text);
+        background: var(--bg);
+      }
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px 16px 48px;
+      }
+      .header {
+        border: 1px solid var(--border);
+        background: rgba(17, 24, 39, 0.85);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .title { margin: 0; font-size: 30px; }
+      .subtitle { color: var(--muted); margin-top: 8px; }
+      .row {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      }
+      .card {
+        border: 1px solid var(--border);
+        background: rgba(15, 23, 42, 0.7);
+        border-radius: 12px;
+        padding: 14px;
+      }
+      .card.buy { border-color: rgba(16,185,129,.6); background: rgba(16,185,129,.08); }
+      .card.hold { border-color: rgba(245,158,11,.45); background: rgba(245,158,11,.06); }
+      .card.sell { border-color: rgba(244,63,94,.65); background: rgba(244,63,94,.08); }
+      .symbol { color: var(--muted); font-size: 12px; }
+      .name { margin: 4px 0 10px; font-size: 18px; font-weight: 600; }
+      .badge {
+        display: inline-block;
+        border-radius: 999px;
+        border: 1px solid;
+        padding: 3px 10px;
+        font-size: 12px;
+      }
+      .badge.buy { border-color: rgba(16,185,129,.45); color: #6ee7b7; }
+      .badge.hold { border-color: rgba(245,158,11,.45); color: #fcd34d; }
+      .badge.sell { border-color: rgba(244,63,94,.5); color: #fda4af; }
+      dl { margin: 12px 0 0; font-size: 14px; }
+      dt, dd { display: inline-block; margin: 0; }
+      dt { color: var(--muted); width: 46%; }
+      dd { width: 52%; text-align: right; }
+      .up { color: #6ee7b7; }
+      .down { color: #fda4af; }
+      .section-title { margin: 26px 0 10px; font-size: 20px; }
+      .charts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 12px;
+      }
+      .chart {
+        border: 1px solid var(--border);
+        background: rgba(17, 24, 39, 0.75);
+        border-radius: 12px;
+        padding: 12px;
+      }
+      svg { width: 100%; height: 220px; display: block; }
+      .axis { stroke: #334155; stroke-width: 1; }
+      .line { fill: none; stroke: #38bdf8; stroke-width: 2.2; }
+      .buy-line { stroke: #10b981; stroke-width: 1.6; stroke-dasharray: 7 6; }
+      .sell-line { stroke: #f43f5e; stroke-width: 1.6; stroke-dasharray: 7 6; }
+      .legend { font-size: 12px; color: var(--muted); margin-top: 8px; display:flex; gap:14px; flex-wrap:wrap; }
+      .dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; }
+      .foot { color: var(--muted); margin-top: 20px; font-size: 13px; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="header">
+        <h1 class="title">InvestView 本地静态预览页</h1>
+        <p class="subtitle">无需终端、无需安装依赖，双击即可预览每次迭代（卡片预警 + 历史 PE 趋势）。</p>
+      </header>
+
+      <h2 class="section-title">全局估值状态</h2>
+      <section class="row" id="cards"></section>
+
+      <h2 class="section-title">历史估值趋势（PE-TTM）</h2>
+      <section class="charts" id="charts"></section>
+
+      <p class="foot">提示：此页为静态验收稿（Mock 数据），用于“无终端快速验收”；真实行为仍以 Next.js 应用为准。</p>
+    </main>
+
+    <script>
+      const assets = [
+        { id: "sp500", name: "标普500", symbol: "SPX", price: 5182.34, dailyChangePct: 0.45, peTtm: 23.6, pePercentile: 67 },
+        { id: "nasdaq100", name: "纳斯达克100", symbol: "NDX", price: 18412.8, dailyChangePct: -0.34, peTtm: 31.8, pePercentile: 76 },
+        { id: "csi300", name: "沪深300", symbol: "000300.SH", price: 3564.2, dailyChangePct: 0.14, peTtm: 11.7, pePercentile: 23 },
+        { id: "csi500", name: "中证500", symbol: "000905.SH", price: 5421.9, dailyChangePct: -0.58, peTtm: 18.4, pePercentile: 41 },
+        { id: "chinext", name: "创业板指", symbol: "399006.SZ", price: 1987.43, dailyChangePct: 0.78, peTtm: 42.9, pePercentile: 88 },
+        { id: "hstech", name: "恒生科技", symbol: "HSTECH", price: 3842.6, dailyChangePct: 1.42, peTtm: 14.2, pePercentile: 17 },
+        { id: "dividend-lowvol", name: "红利低波", symbol: "H30269", price: 4531.2, dailyChangePct: 0.21, peTtm: 9.8, pePercentile: 32 },
+        { id: "gold-etf", name: "黄金ETF", symbol: "518880.SH", price: 4.82, dailyChangePct: -0.08, peTtm: 20.1, pePercentile: 54 },
+      ];
+
+      const buildHistory = (base, amplitude, trend) =>
+        Array.from({ length: 24 }, (_, idx) => ({
+          t: idx,
+          pe: Number((base + Math.sin((idx + 1) / 2.7) * amplitude + trend * idx).toFixed(2)),
+        }));
+
+      const historyMap = {
+        sp500: buildHistory(20, 4, 0.11),
+        nasdaq100: buildHistory(25, 6, 0.09),
+        csi300: buildHistory(13, 2.3, -0.03),
+        csi500: buildHistory(19, 2.8, -0.02),
+        chinext: buildHistory(34, 5.8, 0.18),
+        hstech: buildHistory(16, 3.6, -0.05),
+        "dividend-lowvol": buildHistory(11, 1.2, -0.01),
+        "gold-etf": buildHistory(18, 2.1, 0.04),
+      };
+
+      const zone = (p) => (p < 20 ? "buy" : p > 80 ? "sell" : "hold");
+      const zoneLabel = { buy: "买入/击球区", hold: "持有/观察区", sell: "卖出/警戒区" };
+
+      document.getElementById("cards").innerHTML = assets
+        .map((a) => {
+          const z = zone(a.pePercentile);
+          return `
+            <article class="card ${z}">
+              <div class="symbol">${a.symbol}</div>
+              <h3 class="name">${a.name}</h3>
+              <span class="badge ${z}">${zoneLabel[z]}</span>
+              <dl>
+                <div><dt>当前价格</dt><dd>${a.price.toLocaleString()}</dd></div>
+                <div><dt>日内涨跌</dt><dd class="${a.dailyChangePct >= 0 ? "up" : "down"}">${a.dailyChangePct.toFixed(2)}%</dd></div>
+                <div><dt>PE-TTM</dt><dd>${a.peTtm.toFixed(2)}</dd></div>
+                <div><dt>10年分位</dt><dd>${a.pePercentile}%</dd></div>
+              </dl>
+            </article>`;
+        })
+        .join("");
+
+      const quantile = (values, q) => {
+        const sorted = [...values].sort((a, b) => a - b);
+        const pos = (sorted.length - 1) * q;
+        const base = Math.floor(pos);
+        const rest = pos - base;
+        return sorted[base + 1] !== undefined ? sorted[base] + rest * (sorted[base + 1] - sorted[base]) : sorted[base];
+      };
+
+      const drawChart = (asset) => {
+        const data = historyMap[asset.id];
+        const values = data.map((d) => d.pe);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const pad = (max - min) * 0.1 || 1;
+        const yMin = min - pad;
+        const yMax = max + pad;
+        const y = (v) => 190 - ((v - yMin) / (yMax - yMin)) * 160;
+        const x = (i) => 24 + (i / (data.length - 1)) * 280;
+
+        const buy = quantile(values, 0.2);
+        const sell = quantile(values, 0.8);
+        const path = data.map((d, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(d.pe)}`).join(" ");
+
+        return `
+          <article class="chart">
+            <div><strong>${asset.name}</strong> <span style="color:#94a3b8;font-size:12px">${asset.symbol}</span></div>
+            <svg viewBox="0 0 320 220" role="img" aria-label="${asset.name} PE-TTM 趋势图">
+              <line class="axis" x1="24" y1="190" x2="304" y2="190"></line>
+              <line class="axis" x1="24" y1="30" x2="24" y2="190"></line>
+              <line class="buy-line" x1="24" y1="${y(buy)}" x2="304" y2="${y(buy)}"></line>
+              <line class="sell-line" x1="24" y1="${y(sell)}" x2="304" y2="${y(sell)}"></line>
+              <path class="line" d="${path}"></path>
+            </svg>
+            <div class="legend">
+              <span><i class="dot" style="background:#38bdf8"></i>PE-TTM</span>
+              <span><i class="dot" style="background:#10b981"></i>20% 买入线</span>
+              <span><i class="dot" style="background:#f43f5e"></i>80% 卖出线</span>
+            </div>
+          </article>`;
+      };
+
+      document.getElementById("charts").innerHTML = assets.map(drawChart).join("");
+    </script>
+  </body>
+</html>
