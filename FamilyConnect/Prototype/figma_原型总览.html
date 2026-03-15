@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FamilyConnect MVP 原型全览</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; margin: 0; background: #f2f4f8; }
+    .canvas { padding: 24px; }
+    .title { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+    .sub { color:#666; margin-bottom: 20px; }
+    .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:18px; }
+    .phone { background:#fff; border-radius:24px; border:1px solid #dfe3ea; padding:14px; min-height:420px; box-shadow:0 4px 16px rgba(0,0,0,.06); }
+    .h { font-size:18px; font-weight:700; margin-bottom:10px; }
+    .card { border-radius:16px; background:#fff; border:1px solid #e7ebf2; padding:10px; margin-bottom:10px; }
+    .btn { height:42px; border-radius:12px; margin-bottom:8px; display:flex; align-items:center; justify-content:center; font-weight:600; }
+    .good { background:#4CAF50; color:#fff; }
+    .normal { background:#FFC107; }
+    .bad { background:#F44336; color:#fff; }
+    .light { background:#E3F2FD; }
+    .line { height:10px; background:#eef1f6; border-radius:8px; margin-bottom:8px; }
+    .tab { margin-top:10px; border-top:1px solid #edf0f6; padding-top:8px; color:#666; font-size:12px; }
+  </style>
+</head>
+<body>
+<div class="canvas">
+  <div class="title">FamilyConnect 父母端 MVP 原型图全览</div>
+  <div class="sub">6 页核心页面 + Tab 导航（可作为 Figma 复刻参考）</div>
+  <div class="grid">
+    <div class="phone">
+      <div class="h">HomeView</div>
+      <div class="card"><div class="line"></div><div class="line" style="width:70%"></div></div>
+      <div class="card">
+        <div class="btn good">良好</div><div class="btn normal">一般</div><div class="btn bad">不佳</div>
+      </div>
+      <div class="card"><div class="line"></div><div class="btn light">我已经吃了</div></div>
+      <div class="card"><div class="line"></div><div class="btn light">今天走了</div></div>
+      <div class="card"><div class="btn light">联系家人</div><div class="btn light">补充情况</div></div>
+      <div class="tab">首页 | 记录 | 家人 | 我的</div>
+    </div>
+    <div class="phone">
+      <div class="h">StatusView</div>
+      <div class="card"><div class="line"></div><div class="line" style="width:55%"></div></div>
+      <div class="card"><div class="btn light">有点头晕</div><div class="btn light">没睡好</div><div class="btn light">胃不舒服</div><div class="btn light">有点累</div></div>
+      <div class="btn good">完成</div>
+    </div>
+    <div class="phone">
+      <div class="h">HistoryView</div>
+      <div class="card"><div class="line"></div></div>
+      <div class="card"><div class="line"></div><div class="line" style="width:80%"></div></div>
+      <div class="card"><div class="line"></div><div class="line" style="width:75%"></div></div>
+    </div>
+    <div class="phone">
+      <div class="h">FamilyListView</div>
+      <div class="card"><div class="line" style="width:40%"></div><div class="line" style="width:55%"></div></div>
+      <div class="card"><div class="line" style="width:40%"></div><div class="line" style="width:45%"></div></div>
+      <div class="tab">点击进入家人详情</div>
+    </div>
+    <div class="phone">
+      <div class="h">FamilyDetailView</div>
+      <div class="card"><div class="line"></div><div class="line" style="width:66%"></div><div class="line" style="width:75%"></div></div>
+      <div class="btn light">打电话</div>
+      <div class="btn light">发一句话</div>
+    </div>
+    <div class="phone">
+      <div class="h">ProfileView</div>
+      <div class="card"><div class="line" style="width:50%"></div></div>
+      <div class="card"><div class="line" style="width:65%"></div></div>
+      <div class="card"><div class="line" style="width:70%"></div></div>
+      <div class="card"><div class="line" style="width:45%"></div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
