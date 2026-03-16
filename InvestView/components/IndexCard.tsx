@@ -49,7 +49,7 @@ export function IndexCard({ data }: IndexCardProps) {
   const currencySymbol = getCurrencySymbol(data.currency);
 
   return (
-    <article className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 ${zoneClassName[data.zone]}`}>
+    <article className={`rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-0.5 ${zoneClassName[data.zone]}`}>
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
           <p className="text-xs text-slate-500">{data.market}</p>
