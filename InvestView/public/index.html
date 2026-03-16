@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvestView 预览页</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; color: #0f172a; }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 24px; }
+    .hero { background: linear-gradient(120deg, #0e7490, #0f766e); border-radius: 20px; padding: 24px; color: #fff; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 16px; }
+    .card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 4px 20px rgba(15, 23, 42, .06); border-left: 5px solid #16a34a; }
+    .row { display: flex; justify-content: space-between; align-items: center; }
+    .pill { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 999px; font-size: 12px; }
+    .small { color: #64748b; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>InvestView 个人投资看板（静态预览）</h1>
+      <p>该文件可直接在浏览器中打开预览布局；完整交互版请运行 Next.js 项目。</p>
+    </section>
+    <section class="grid">
+      <article class="card">
+        <div class="row"><h3>恒生科技指数</h3><span class="pill">买入/击球区</span></div>
+        <p class="small">价格 3692.14 HKD · PE-TTM 18.5 · 10年分位 27%</p>
+      </article>
+      <article class="card" style="border-left-color:#f59e0b">
+        <div class="row"><h3>标普500</h3><span class="pill" style="background:#fef3c7;color:#92400e">持有/观察区</span></div>
+        <p class="small">价格 5298.41 USD · PE-TTM 24.8 · 10年分位 72%</p>
+      </article>
+      <article class="card" style="border-left-color:#ef4444">
+        <div class="row"><h3>创业板指</h3><span class="pill" style="background:#fee2e2;color:#991b1b">卖出/警戒区</span></div>
+        <p class="small">价格 1883.50 CNY · PE-TTM 39.8 · 10年分位 84%</p>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

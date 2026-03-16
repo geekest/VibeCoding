@@ -64,3 +64,8 @@ BarcodeMenuBar/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .DS_Store
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .vscode/settings.json
+
+# InvestView (Next.js)
+InvestView/node_modules/
+InvestView/.next/
+InvestView/.env.local
