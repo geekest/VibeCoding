@@ -68,17 +68,17 @@ export function IndexCard({ data }: IndexCardProps) {
       <div className="mb-4 grid grid-cols-3 gap-2 text-sm">
         <div className="rounded-lg bg-cyan-50 p-2 text-center">
           <p className="text-slate-500">
-            <span className="cursor-help underline decoration-dotted" title="过去12月市盈率">
-              PE-TTM
-            </span>
-            /
-            <span className="cursor-help underline decoration-dotted" title="未来12月预期市盈率">
-              PE-FWD
+            <span
+              className="cursor-help underline decoration-dotted"
+              title="PE含TTM与FWD；TTM=过去12月市盈率，FWD=未来12月预期市盈率"
+            >
+              PE
             </span>
           </p>
           <p className="text-lg font-bold text-cyan-900">
             {formatMetric(data.peTtm)}/{formatMetric(data.peFwd)}
           </p>
+          <p className="text-[11px] text-slate-500">TTM/FWD</p>
         </div>
 
         <MetricTile label="PB" title="每股净资产倍数" value={data.pbTtm.toFixed(2)} className="bg-indigo-50" />
