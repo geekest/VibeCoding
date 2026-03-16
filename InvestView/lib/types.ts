@@ -11,6 +11,12 @@ export interface ReturnMetrics {
   y5: number;
 }
 
+export interface PeChangeMetrics {
+  m3: number;
+  m6: number;
+  y1: number;
+}
+
 export interface PePercentiles {
   y3: number;
   y5: number;
@@ -31,7 +37,10 @@ export interface IndexData {
   latestPrice: number;
   currency: string;
   peTtm: number;
+  peFwd: number;
   pbTtm: number;
+  peg: number;
+  peChanges: PeChangeMetrics;
   pePercentiles: PePercentiles;
   returns: ReturnMetrics;
   zone: Zone;
