@@ -46,7 +46,8 @@
     const periods=[['1天','d1'],['1周','w1'],['1月','m1'],['3月','m3'],['6月','m6'],['1年','y1'],['2年','y2'],['5年','y5']];
     const fmt=v=>v===0?'N/A':v.toFixed(2);
     const alphaApiKey='2DSXBV4RAMYHNIUR';
-    const alphaSymbolByIndex={sp500:'SPY',nasdaq100:'QQQ',nikkei225:'EWJ',smh:'SMH',gold:'GLD'};
+    const scheduleWindowMs=5*60*1000;
+    const alphaTargets=[{symbol:'SPX',alpha:'SPY',currency:'$'},{symbol:'NDX',alpha:'QQQ',currency:'$'},{symbol:'N225',alpha:'EWJ',currency:'¥'},{symbol:'SMH',alpha:'SMH',currency:'$'},{symbol:'518880.SH',alpha:'GLD',currency:'¥'}];
     document.getElementById('cards').innerHTML=indexes.map(item=>{
       const z=zoneUI[item.zone];
       const returns=periods.map(([label,key])=>{const v=item.r[key]; return `<div class="ret-item"><div class="label">${label}</div><div class="${v>=0?'up':'down'} ${key==='d1'?'js-d1':''}">${v>0?'+':''}${v.toFixed(2)}%</div></div>`;}).join('');
@@ -66,27 +67,46 @@
       }
     }
 
-    async function refreshAlphaData(){
-      const targets=[{symbol:'SPX',alpha:alphaSymbolByIndex.sp500,currency:'$'},{symbol:'NDX',alpha:alphaSymbolByIndex.nasdaq100,currency:'$'},{symbol:'N225',alpha:alphaSymbolByIndex.nikkei225,currency:'¥'},{symbol:'SMH',alpha:alphaSymbolByIndex.smh,currency:'$'},{symbol:'518880.SH',alpha:alphaSymbolByIndex.gold,currency:'¥'}];
-      for(const item of targets){
-        const quote=await getAlphaQuote(item.alpha);
-        if(!quote||!quote['05. price']) continue;
-        const card=document.querySelector(`article[data-symbol="${item.symbol}"]`);
-        if(!card) continue;
-        const price=Number.parseFloat(quote['05. price']);
-        const pct=Number.parseFloat(String(quote['10. change percent']||'0').replace('%',''));
-        const priceNode=card.querySelector('.js-price');
-        const d1Node=card.querySelector('.js-d1');
-        if(priceNode && !Number.isNaN(price)) priceNode.textContent=`${item.currency}${price.toLocaleString('zh-CN',{maximumFractionDigits:2})}`;
-        if(d1Node && !Number.isNaN(pct)){
-          d1Node.textContent=`${pct>0?'+':''}${pct.toFixed(2)}%`;
-          d1Node.classList.remove('up','down');
-          d1Node.classList.add(pct>=0?'up':'down');
-        }
+    function clearToEmpty(){
+      document.querySelectorAll('.js-price').forEach((n)=>n.textContent='-');
+      document.querySelectorAll('.ret-item div:nth-child(2)').forEach((n)=>{ n.textContent='-'; n.classList.remove('up','down'); });
+      document.querySelectorAll('.kpi strong').forEach((n)=>n.textContent='-');
+      document.querySelectorAll('.pct strong').forEach((n)=>n.textContent='-');
+      document.querySelectorAll('.pechg strong').forEach((n)=>n.textContent='-');
+    }
+
+    function applyQuote(item, quote){
+      if(!quote||!quote['05. price']) return;
+      const card=document.querySelector(`article[data-symbol="${item.symbol}"]`);
+      if(!card) return;
+      const price=Number.parseFloat(quote['05. price']);
+      const pct=Number.parseFloat(String(quote['10. change percent']||'0').replace('%',''));
+      const priceNode=card.querySelector('.js-price');
+      const d1Node=card.querySelector('.js-d1');
+      if(priceNode && !Number.isNaN(price)) priceNode.textContent=`${item.currency}${price.toLocaleString('zh-CN',{maximumFractionDigits:2})}`;
+      if(d1Node && !Number.isNaN(pct)){
+        d1Node.textContent=`${pct>0?'+':''}${pct.toFixed(2)}%`;
+        d1Node.classList.remove('up','down');
+        d1Node.classList.add(pct>=0?'up':'down');
       }
     }
 
-    refreshAlphaData();
+    async function startScheduledRefresh(){
+      clearToEmpty();
+      if(alphaTargets.length===0) return;
+      const stepMs=Math.max(15000, Math.floor(scheduleWindowMs/alphaTargets.length));
+      let idx=0;
+      const run=async()=>{
+        const item=alphaTargets[idx%alphaTargets.length];
+        idx+=1;
+        const quote=await getAlphaQuote(item.alpha);
+        applyQuote(item, quote);
+      };
+      await run();
+      setInterval(run, stepMs);
+    }
+
+    startScheduledRefresh();
   </script>
 </body>
 </html>

@@ -33,4 +33,4 @@ npm run dev
 
 - 默认会尝试使用 Alpha Vantage（`GLOBAL_QUOTE`）拉取部分指数的实时价格和当日涨跌。
 - 可通过 `.env.local` 覆盖 `NEXT_PUBLIC_MARKET_API_BASE_URL` 与 `NEXT_PUBLIC_MARKET_API_KEY`。
-- 其他未覆盖市场继续使用 Mock 数据，保持页面完整渲染。
+- 未回传真实数据的字段将显示为 `-`，不再回落展示 Mock 数值。

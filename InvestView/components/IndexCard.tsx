@@ -22,14 +22,15 @@ const currencySymbolMap: Record<string, string> = {
 
 const getCurrencySymbol = (currency: string): string => currencySymbolMap[currency] ?? currency;
 
-const formatSignedPercent = (value: number): string => `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;
+const formatSignedPercent = (value: number): string =>
+  Number.isFinite(value) ? `${value > 0 ? '+' : ''}${value.toFixed(2)}%` : '-';
 
-const formatMetric = (value: number): string => (value === 0 ? 'N/A' : value.toFixed(2));
+const formatMetric = (value: number): string => (Number.isFinite(value) ? value.toFixed(2) : '-');
 
 const ReturnPill = ({ label, value }: { label: string; value: number }) => (
   <div className="rounded-lg bg-slate-50 px-2 py-1 text-xs">
     <p className="text-slate-500">{label}</p>
-    <p className={value >= 0 ? 'text-emerald-600' : 'text-rose-600'}>{formatSignedPercent(value)}</p>
+    <p className={!Number.isFinite(value) ? 'text-slate-500' : value >= 0 ? 'text-emerald-600' : 'text-rose-600'}>{formatSignedPercent(value)}</p>
   </div>
 );
 
@@ -61,8 +62,7 @@ export function IndexCard({ data }: IndexCardProps) {
       <div className="mb-3 rounded-xl bg-slate-50 p-3">
         <p className="text-xs text-slate-500">实时估值价格</p>
         <p className="text-lg font-medium text-slate-600">
-          {currencySymbol}
-          {data.latestPrice.toLocaleString('zh-CN')}
+          {Number.isFinite(data.latestPrice) ? `${currencySymbol}${data.latestPrice.toLocaleString('zh-CN')}` : '-'}
         </p>
       </div>
 
@@ -81,8 +81,8 @@ export function IndexCard({ data }: IndexCardProps) {
           </p>
         </div>
 
-        <MetricTile label="PB" title="每股净资产倍数" value={data.pbTtm.toFixed(2)} className="bg-indigo-50" />
-        <MetricTile label="PEG" title="市盈率相对增速" value={data.peg.toFixed(2)} className="bg-violet-50" />
+        <MetricTile label="PB" title="每股净资产倍数" value={formatMetric(data.pbTtm)} className="bg-indigo-50" />
+        <MetricTile label="PEG" title="市盈率相对增速" value={formatMetric(data.peg)} className="bg-violet-50" />
       </div>
 
       <div className="mb-4 grid grid-cols-4 gap-2">
@@ -99,30 +99,30 @@ export function IndexCard({ data }: IndexCardProps) {
       <div className="mb-3 grid grid-cols-3 gap-2 text-xs">
         <div className="rounded-lg bg-slate-100 p-2 text-center">
           <p className="text-slate-500">3年PE分位</p>
-          <p className="text-lg font-bold text-slate-900">{data.pePercentiles.y3}%</p>
+          <p className="text-lg font-bold text-slate-900">{Number.isFinite(data.pePercentiles.y3) ? `${data.pePercentiles.y3}%` : '-'}</p>
         </div>
         <div className="rounded-lg bg-slate-100 p-2 text-center">
           <p className="text-slate-500">5年PE分位</p>
-          <p className="text-lg font-bold text-slate-900">{data.pePercentiles.y5}%</p>
+          <p className="text-lg font-bold text-slate-900">{Number.isFinite(data.pePercentiles.y5) ? `${data.pePercentiles.y5}%` : '-'}</p>
         </div>
         <div className="rounded-lg bg-slate-100 p-2 text-center">
           <p className="text-slate-500">10年PE分位</p>
-          <p className="text-xl font-extrabold text-cyan-900">{data.pePercentiles.y10}%</p>
+          <p className="text-xl font-extrabold text-cyan-900">{Number.isFinite(data.pePercentiles.y10) ? `${data.pePercentiles.y10}%` : '-'}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="rounded-lg bg-cyan-50 p-2 text-center">
           <p className="text-slate-500">PE近3月变化</p>
-          <p className={data.peChanges.m3 >= 0 ? 'font-semibold text-emerald-600' : 'font-semibold text-rose-600'}>{formatSignedPercent(data.peChanges.m3)}</p>
+          <p className={!Number.isFinite(data.peChanges.m3) ? 'font-semibold text-slate-500' : data.peChanges.m3 >= 0 ? 'font-semibold text-emerald-600' : 'font-semibold text-rose-600'}>{formatSignedPercent(data.peChanges.m3)}</p>
         </div>
         <div className="rounded-lg bg-cyan-50 p-2 text-center">
           <p className="text-slate-500">PE近6月变化</p>
-          <p className={data.peChanges.m6 >= 0 ? 'font-semibold text-emerald-600' : 'font-semibold text-rose-600'}>{formatSignedPercent(data.peChanges.m6)}</p>
+          <p className={!Number.isFinite(data.peChanges.m6) ? 'font-semibold text-slate-500' : data.peChanges.m6 >= 0 ? 'font-semibold text-emerald-600' : 'font-semibold text-rose-600'}>{formatSignedPercent(data.peChanges.m6)}</p>
         </div>
         <div className="rounded-lg bg-cyan-50 p-2 text-center">
           <p className="text-slate-500">PE近1年变化</p>
-          <p className={data.peChanges.y1 >= 0 ? 'font-semibold text-emerald-600' : 'font-semibold text-rose-600'}>{formatSignedPercent(data.peChanges.y1)}</p>
+          <p className={!Number.isFinite(data.peChanges.y1) ? 'font-semibold text-slate-500' : data.peChanges.y1 >= 0 ? 'font-semibold text-emerald-600' : 'font-semibold text-rose-600'}>{formatSignedPercent(data.peChanges.y1)}</p>
         </div>
       </div>
     </article>
