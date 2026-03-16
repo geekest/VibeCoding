@@ -11,6 +11,16 @@ const zoneClassName: Record<IndexData['zone'], string> = {
   sell: 'border-l-4 border-l-red-500'
 };
 
+const currencySymbolMap: Record<string, string> = {
+  CNY: '¥',
+  USD: '$',
+  HKD: 'HK$',
+  GBP: '£',
+  EUR: '€'
+};
+
+const getCurrencySymbol = (currency: string): string => currencySymbolMap[currency] ?? currency;
+
 const formatSignedPercent = (value: number): string => `${value > 0 ? '+' : ''}${value.toFixed(2)}%`;
 
 const ReturnPill = ({ label, value }: { label: string; value: number }) => (
@@ -21,6 +31,8 @@ const ReturnPill = ({ label, value }: { label: string; value: number }) => (
 );
 
 export function IndexCard({ data }: IndexCardProps) {
+  const currencySymbol = getCurrencySymbol(data.currency);
+
   return (
     <article className={`rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 ${zoneClassName[data.zone]}`}>
       <div className="mb-3 flex items-start justify-between gap-2">
@@ -32,11 +44,23 @@ export function IndexCard({ data }: IndexCardProps) {
         <AlertBadge zone={data.zone} />
       </div>
 
-      <div className="mb-4">
-        <p className="text-2xl font-bold text-slate-900">
-          {data.latestPrice.toLocaleString('zh-CN')} {data.currency}
+      <div className="mb-3 rounded-xl bg-slate-50 p-3">
+        <p className="text-xs text-slate-500">实时估值价格</p>
+        <p className="text-lg font-medium text-slate-600">
+          {currencySymbol}
+          {data.latestPrice.toLocaleString('zh-CN')}
         </p>
-        <p className="text-sm text-slate-600">PE-TTM: {data.peTtm === 0 ? 'N/A' : data.peTtm.toFixed(2)}</p>
+      </div>
+
+      <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
+        <div className="rounded-lg bg-cyan-50 p-2 text-center">
+          <p className="text-slate-500">PE-TTM</p>
+          <p className="text-lg font-bold text-cyan-800">{data.peTtm === 0 ? 'N/A' : data.peTtm.toFixed(2)}</p>
+        </div>
+        <div className="rounded-lg bg-indigo-50 p-2 text-center">
+          <p className="text-slate-500">PB 最新</p>
+          <p className="text-lg font-bold text-indigo-800">{data.pbTtm.toFixed(2)}</p>
+        </div>
       </div>
 
       <div className="mb-4 grid grid-cols-4 gap-2">
@@ -52,16 +76,16 @@ export function IndexCard({ data }: IndexCardProps) {
 
       <div className="grid grid-cols-3 gap-2 text-xs">
         <div className="rounded-lg bg-slate-100 p-2 text-center">
-          <p className="text-slate-500">3年分位</p>
-          <p className="font-semibold text-slate-800">{data.pePercentiles.y3}%</p>
+          <p className="text-slate-500">3年PE分位</p>
+          <p className="text-lg font-bold text-slate-900">{data.pePercentiles.y3}%</p>
         </div>
         <div className="rounded-lg bg-slate-100 p-2 text-center">
-          <p className="text-slate-500">5年分位</p>
-          <p className="font-semibold text-slate-800">{data.pePercentiles.y5}%</p>
+          <p className="text-slate-500">5年PE分位</p>
+          <p className="text-lg font-bold text-slate-900">{data.pePercentiles.y5}%</p>
         </div>
         <div className="rounded-lg bg-slate-100 p-2 text-center">
-          <p className="text-slate-500">10年分位</p>
-          <p className="font-semibold text-slate-800">{data.pePercentiles.y10}%</p>
+          <p className="text-slate-500">10年PE分位</p>
+          <p className="text-xl font-extrabold text-cyan-900">{data.pePercentiles.y10}%</p>
         </div>
       </div>
     </article>

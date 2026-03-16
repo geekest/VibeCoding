@@ -31,6 +31,7 @@ export interface IndexData {
   latestPrice: number;
   currency: string;
   peTtm: number;
+  pbTtm: number;
   pePercentiles: PePercentiles;
   returns: ReturnMetrics;
   zone: Zone;
