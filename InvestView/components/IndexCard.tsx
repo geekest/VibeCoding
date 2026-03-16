@@ -78,7 +78,6 @@ export function IndexCard({ data }: IndexCardProps) {
           <p className="text-lg font-bold text-cyan-900">
             {formatMetric(data.peTtm)}/{formatMetric(data.peFwd)}
           </p>
-          <p className="text-[11px] text-slate-500">TTM/FWD</p>
         </div>
 
         <MetricTile label="PB" title="每股净资产倍数" value={data.pbTtm.toFixed(2)} className="bg-indigo-50" />
