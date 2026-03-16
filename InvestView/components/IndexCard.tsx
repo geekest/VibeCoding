@@ -16,7 +16,8 @@ const currencySymbolMap: Record<string, string> = {
   USD: '$',
   HKD: 'HK$',
   GBP: '£',
-  EUR: '€'
+  EUR: '€',
+  JPY: '¥'
 };
 
 const getCurrencySymbol = (currency: string): string => currencySymbolMap[currency] ?? currency;
