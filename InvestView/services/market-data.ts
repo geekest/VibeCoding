@@ -1,5 +1,15 @@
 import { IndexAsset, MarketDataProvider, MarketRegion, PeHistoryPoint } from "@/types/investment";
 
+interface DanjuanIndexItem {
+  code: string;
+  name: string;
+  pe?: number;
+  pe_percentile?: number;
+  pb?: number;
+  pb_percentile?: number;
+  date?: string;
+}
+
 const buildHistory = (base: number, amplitude: number, trend: number): PeHistoryPoint[] => {
   return Array.from({ length: 24 }).map((_, idx) => {
     const month = idx + 1;
@@ -53,11 +63,98 @@ class MockMarketDataProvider implements MarketDataProvider {
   }
 }
 
-export const marketDataService = new MockMarketDataProvider();
+const trackedIndexes = [
+  { id: "csi300", symbol: "000300.SH", code: "SH000300", region: "CN" as const },
+  { id: "csi500", symbol: "000905.SH", code: "SH000905", region: "CN" as const },
+  { id: "chinext", symbol: "399006.SZ", code: "SZ399006", region: "CN" as const },
+  { id: "sp500", symbol: "SPX", code: "SP500", region: "US" as const },
+  { id: "nasdaq100", symbol: "NDX", code: "NDX", region: "US" as const },
+  { id: "hstech", symbol: "HSTECH", code: "HSTECH", region: "HK" as const },
+];
 
-/**
- * TODO: 接入真实数据源时可替换为 HTTP Provider：
- * 1. 在 .env.local 中配置 API Key（例如 FINNHUB_API_KEY / ALPHA_VANTAGE_API_KEY）。
- * 2. 在此文件创建 RealMarketDataProvider，通过 fetch 调用服务商 API。
- * 3. 将导出的 service 从 Mock provider 切换到 Real provider。
- */
+const defaultApiUrl = "https://danjuanfunds.com/djapi/index_eva/dj";
+
+const buildHistoryFromLatestPe = (peTtm: number): PeHistoryPoint[] => {
+  const fallback = buildHistory(peTtm, Math.max(peTtm * 0.12, 1.2), -0.02);
+  return fallback.map((item, index) => {
+    if (index === fallback.length - 1) {
+      return { ...item, peTtm: Number(peTtm.toFixed(2)) };
+    }
+    return item;
+  });
+};
+
+class RealMarketDataProvider implements MarketDataProvider {
+  async fetchOverview(): Promise<IndexAsset[]> {
+    const apiUrl = process.env.INDEX_VALUATION_API_URL || defaultApiUrl;
+    const response = await fetch(apiUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        Referer: "https://danjuanfunds.com/",
+      },
+      next: { revalidate: 900 },
+    });
+
+    if (!response.ok) {
+      throw new Error(`指数 API 请求失败: ${response.status}`);
+    }
+
+    const payload = (await response.json()) as
+      | { data?: { items?: DanjuanIndexItem[]; all_indexes?: DanjuanIndexItem[] } }
+      | DanjuanIndexItem[];
+
+    const list = Array.isArray(payload)
+      ? payload
+      : payload.data?.items || payload.data?.all_indexes || [];
+
+    if (!list.length) {
+      throw new Error("指数 API 返回为空");
+    }
+
+    const byCode = new Map(list.map((item) => [item.code, item]));
+
+    const merged = trackedIndexes
+      .map((indexItem) => {
+        const latest = byCode.get(indexItem.code);
+        if (!latest) return null;
+
+        const peValue = latest.pe ?? latest.pb ?? 0;
+        const percentileRaw = latest.pe_percentile ?? latest.pb_percentile ?? 0;
+        const pePercentile = Number((percentileRaw * 100).toFixed(0));
+
+        return createAsset(
+          indexItem.id,
+          latest.name || indexItem.id,
+          indexItem.symbol,
+          indexItem.region,
+          0,
+          0,
+          Number(peValue.toFixed(2)),
+          pePercentile,
+          buildHistoryFromLatestPe(peValue),
+        );
+      })
+      .filter((item): item is IndexAsset => item !== null);
+
+    if (!merged.length) {
+      throw new Error("未匹配到任何目标指数");
+    }
+
+    return merged;
+  }
+}
+
+class SafeMarketDataProvider implements MarketDataProvider {
+  private readonly realProvider = new RealMarketDataProvider();
+  private readonly mockProvider = new MockMarketDataProvider();
+
+  async fetchOverview(): Promise<IndexAsset[]> {
+    try {
+      return await this.realProvider.fetchOverview();
+    } catch {
+      return this.mockProvider.fetchOverview();
+    }
+  }
+}
+
+export const marketDataService = new SafeMarketDataProvider();
