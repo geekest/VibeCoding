@@ -5,7 +5,6 @@ import { getDashboardData } from '@/lib/api';
 
 export default async function HomePage() {
   const dashboard = await getDashboardData();
-  const focusIndexes = dashboard.indexes.slice(0, 4);
 
   return (
     <main className="mx-auto min-h-screen max-w-7xl px-4 py-6 md:px-8">
@@ -36,7 +35,7 @@ export default async function HomePage() {
           <h2 className="text-xl font-semibold">核心指数历史估值趋势图</h2>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          {focusIndexes.map((item) => (
+          {dashboard.indexes.map((item) => (
             <PeChart key={item.id} title={item.name} history={item.history} />
           ))}
         </div>
