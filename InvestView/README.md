@@ -27,3 +27,10 @@ npm run dev
 
 - 直接打开本地文件：`InvestView/index.html`。
 - 通过 Next.js 访问：运行项目后打开 `http://localhost:3000/index.html`（文件位于 `public/index.html`，可避免 Not Found）。
+
+
+## Alpha Vantage 接入
+
+- 默认会尝试使用 Alpha Vantage（`GLOBAL_QUOTE`）拉取部分指数的实时价格和当日涨跌。
+- 可通过 `.env.local` 覆盖 `NEXT_PUBLIC_MARKET_API_BASE_URL` 与 `NEXT_PUBLIC_MARKET_API_KEY`。
+- 其他未覆盖市场继续使用 Mock 数据，保持页面完整渲染。

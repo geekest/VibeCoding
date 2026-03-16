@@ -45,12 +45,48 @@
     const zoneUI={buy:{border:'#16a34a',bg:'#dcfce7',text:'#166534',label:'买入/击球区'},hold:{border:'#d97706',bg:'#fef3c7',text:'#92400e',label:'持有/观察区'},sell:{border:'#dc2626',bg:'#fee2e2',text:'#991b1b',label:'卖出/警戒区'}};
     const periods=[['1天','d1'],['1周','w1'],['1月','m1'],['3月','m3'],['6月','m6'],['1年','y1'],['2年','y2'],['5年','y5']];
     const fmt=v=>v===0?'N/A':v.toFixed(2);
+    const alphaApiKey='2DSXBV4RAMYHNIUR';
+    const alphaSymbolByIndex={sp500:'SPY',nasdaq100:'QQQ',nikkei225:'EWJ',smh:'SMH',gold:'GLD'};
     document.getElementById('cards').innerHTML=indexes.map(item=>{
       const z=zoneUI[item.zone];
-      const returns=periods.map(([label,key])=>{const v=item.r[key]; return `<div class="ret-item"><div class="label">${label}</div><div class="${v>=0?'up':'down'}">${v>0?'+':''}${v.toFixed(2)}%</div></div>`;}).join('');
+      const returns=periods.map(([label,key])=>{const v=item.r[key]; return `<div class="ret-item"><div class="label">${label}</div><div class="${v>=0?'up':'down'} ${key==='d1'?'js-d1':''}">${v>0?'+':''}${v.toFixed(2)}%</div></div>`;}).join('');
       const pef = `<span class="hover" title="PE含TTM与FWD；TTM=过去12月市盈率，FWD=未来12月预期市盈率">PE</span>`;
-      return `<article class="card" style="border-left-color:${z.border}"><div class="top"><div><div class="market">${item.market}</div><div class="name">${item.name}</div><div class="symbol">${item.symbol}</div></div><span class="badge" style="background:${z.bg};color:${z.text}">${z.label}</span></div><div class="price-box"><div class="label">实时估值价格</div><div class="price">${item.currency}${item.price.toLocaleString('zh-CN')}</div></div><div class="kpi-grid"><div class="kpi pe"><div class="label">${pef}</div><strong>${fmt(item.peTtm)}/${fmt(item.peFwd)}</strong></div><div class="kpi pb"><div class="label"><span class="hover" title="每股净资产倍数">PB</span></div><strong>${item.pb.toFixed(2)}</strong></div><div class="kpi peg"><div class="label"><span class="hover" title="市盈率相对增速">PEG</span></div><strong>${item.peg.toFixed(2)}</strong></div></div><div class="ret-grid">${returns}</div><div class="pct-grid"><div class="pct"><div>3年PE分位</div><strong>${item.p3}%</strong></div><div class="pct"><div>5年PE分位</div><strong>${item.p5}%</strong></div><div class="pct focus"><div>10年PE分位</div><strong>${item.p10}%</strong></div></div><div class="pechg-grid"><div class="pechg"><div>PE近3月变化</div><strong class="${item.peChg.m3>=0?'up':'down'}">${item.peChg.m3>0?'+':''}${item.peChg.m3.toFixed(2)}%</strong></div><div class="pechg"><div>PE近6月变化</div><strong class="${item.peChg.m6>=0?'up':'down'}">${item.peChg.m6>0?'+':''}${item.peChg.m6.toFixed(2)}%</strong></div><div class="pechg"><div>PE近1年变化</div><strong class="${item.peChg.y1>=0?'up':'down'}">${item.peChg.y1>0?'+':''}${item.peChg.y1.toFixed(2)}%</strong></div></div></article>`;
+      return `<article class="card" data-symbol="${item.symbol}" style="border-left-color:${z.border}"><div class="top"><div><div class="market">${item.market}</div><div class="name">${item.name}</div><div class="symbol">${item.symbol}</div></div><span class="badge" style="background:${z.bg};color:${z.text}">${z.label}</span></div><div class="price-box"><div class="label">实时估值价格</div><div class="price js-price">${item.currency}${item.price.toLocaleString('zh-CN')}</div></div><div class="kpi-grid"><div class="kpi pe"><div class="label">${pef}</div><strong>${fmt(item.peTtm)}/${fmt(item.peFwd)}</strong></div><div class="kpi pb"><div class="label"><span class="hover" title="每股净资产倍数">PB</span></div><strong>${item.pb.toFixed(2)}</strong></div><div class="kpi peg"><div class="label"><span class="hover" title="市盈率相对增速">PEG</span></div><strong>${item.peg.toFixed(2)}</strong></div></div><div class="ret-grid">${returns}</div><div class="pct-grid"><div class="pct"><div>3年PE分位</div><strong>${item.p3}%</strong></div><div class="pct"><div>5年PE分位</div><strong>${item.p5}%</strong></div><div class="pct focus"><div>10年PE分位</div><strong>${item.p10}%</strong></div></div><div class="pechg-grid"><div class="pechg"><div>PE近3月变化</div><strong class="${item.peChg.m3>=0?'up':'down'}">${item.peChg.m3>0?'+':''}${item.peChg.m3.toFixed(2)}%</strong></div><div class="pechg"><div>PE近6月变化</div><strong class="${item.peChg.m6>=0?'up':'down'}">${item.peChg.m6>0?'+':''}${item.peChg.m6.toFixed(2)}%</strong></div><div class="pechg"><div>PE近1年变化</div><strong class="${item.peChg.y1>=0?'up':'down'}">${item.peChg.y1>0?'+':''}${item.peChg.y1.toFixed(2)}%</strong></div></div></article>`;
     }).join('');
+
+    async function getAlphaQuote(symbol){
+      try{
+        const url=`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(symbol)}&apikey=${alphaApiKey}`;
+        const response=await fetch(url);
+        if(!response.ok) return null;
+        const json=await response.json();
+        return json['Global Quote']||null;
+      }catch{
+        return null;
+      }
+    }
+
+    async function refreshAlphaData(){
+      const targets=[{symbol:'SPX',alpha:alphaSymbolByIndex.sp500,currency:'$'},{symbol:'NDX',alpha:alphaSymbolByIndex.nasdaq100,currency:'$'},{symbol:'N225',alpha:alphaSymbolByIndex.nikkei225,currency:'¥'},{symbol:'SMH',alpha:alphaSymbolByIndex.smh,currency:'$'},{symbol:'518880.SH',alpha:alphaSymbolByIndex.gold,currency:'¥'}];
+      for(const item of targets){
+        const quote=await getAlphaQuote(item.alpha);
+        if(!quote||!quote['05. price']) continue;
+        const card=document.querySelector(`article[data-symbol="${item.symbol}"]`);
+        if(!card) continue;
+        const price=Number.parseFloat(quote['05. price']);
+        const pct=Number.parseFloat(String(quote['10. change percent']||'0').replace('%',''));
+        const priceNode=card.querySelector('.js-price');
+        const d1Node=card.querySelector('.js-d1');
+        if(priceNode && !Number.isNaN(price)) priceNode.textContent=`${item.currency}${price.toLocaleString('zh-CN',{maximumFractionDigits:2})}`;
+        if(d1Node && !Number.isNaN(pct)){
+          d1Node.textContent=`${pct>0?'+':''}${pct.toFixed(2)}%`;
+          d1Node.classList.remove('up','down');
+          d1Node.classList.add(pct>=0?'up':'down');
+        }
+      }
+    }
+
+    refreshAlphaData();
   </script>
 </body>
 </html>
