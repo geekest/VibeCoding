@@ -14,6 +14,9 @@ struct BarcodeMenuBarApp: App {
 }
 
 final class AppState: ObservableObject {
+    static let clipboardPreviewFontSize: CGFloat = 11
+    static let exportedTextBaseFontSize: CGFloat = 22
+
     enum SizePreset: String, CaseIterable {
         case s
         case m
@@ -23,9 +26,9 @@ final class AppState: ObservableObject {
 
         var scaleMultiplier: CGFloat {
             switch self {
-            case .s: return 0.8
-            case .m: return 1.0
-            case .l: return 1.3
+            case .s: return 1.0
+            case .m: return 1.8
+            case .l: return 2.6
             }
         }
     }
@@ -79,7 +82,11 @@ final class AppState: ObservableObject {
             rawImage = BarcodeGenerator.generateCode128(from: value, sizeMultiplier: sizePreset.scaleMultiplier)
         }
         guard let rawImage else { return nil }
-        return BarcodeGenerator.composeImage(rawImage: rawImage, text: value)
+        return BarcodeGenerator.composeImage(
+            rawImage: rawImage,
+            text: value,
+            fontSize: Self.exportedTextBaseFontSize * sizePreset.scaleMultiplier
+        )
     }
 
     func startRecordingUI() {
@@ -385,7 +392,7 @@ struct ContentView: View {
 
             if !appState.barcodeString.isEmpty {
                 Text(appState.barcodeString)
-                    .font(.system(size: 11, weight: .regular, design: .monospaced))
+                    .font(.system(size: AppState.clipboardPreviewFontSize, weight: .regular, design: .monospaced))
                     .lineLimit(2)
             }
 
@@ -599,8 +606,8 @@ enum BarcodeGenerator {
         return nsImage
     }
 
-    static func composeImage(rawImage: NSImage, text: String) -> NSImage {
-        let font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
+    static func composeImage(rawImage: NSImage, text: String, fontSize: CGFloat) -> NSImage {
+        let font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
         let attributes: [NSAttributedString.Key: Any] = [
