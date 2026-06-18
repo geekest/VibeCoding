@@ -1,0 +1,1846 @@
+/* =============================================================================
+   Mac OS Fable — main.css
+   Complete macOS-style Web OS stylesheet
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   CSS Custom Properties (Theme Variables)
+   --------------------------------------------------------------------------- */
+
+:root {
+  --bg: #f0f0f0;
+  --surface: rgba(255, 255, 255, 0.85);
+  --surface-solid: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --text: #1c1c1e;
+  --text-secondary: #636366;
+  --accent: #007AFF;
+  --glass: rgba(255, 255, 255, 0.6);
+  --glass-dark: rgba(0, 0, 0, 0.3);
+  --menubar-bg: rgba(180, 180, 180, 0.7);
+  --dock-bg: rgba(255, 255, 255, 0.25);
+  --window-titlebar: rgba(236, 236, 236, 0.95);
+  --window-body: rgba(255, 255, 255, 0.95);
+  --shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  --wallpaper: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+[data-theme="dark"] {
+  --bg: #1c1c1e;
+  --surface: rgba(44, 44, 46, 0.85);
+  --surface-solid: #2c2c2e;
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f2f2f7;
+  --text-secondary: #aeaeb2;
+  --menubar-bg: rgba(30, 30, 30, 0.8);
+  --dock-bg: rgba(0, 0, 0, 0.3);
+  --window-titlebar: rgba(40, 40, 40, 0.95);
+  --window-body: rgba(28, 28, 30, 0.95);
+}
+
+/* ---------------------------------------------------------------------------
+   Smooth Theme Transitions
+   (Exclude elements with animation to prevent breaking window/notif anims)
+   --------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.3s,
+    color 0.3s,
+    border-color 0.3s;
+}
+
+/* Exclude transition for elements that use their own animations */
+.window,
+.window *,
+.notif,
+.notif *,
+#boot-bar,
+#boot-screen {
+  transition: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Reset & Base
+   --------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica, sans-serif;
+}
+
+body {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   Boot Screen
+   --------------------------------------------------------------------------- */
+
+#boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+
+#boot-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
+}
+
+#boot-logo svg {
+  width: 80px;
+  height: 80px;
+  fill: white;
+}
+
+#boot-bar-track {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+#boot-bar {
+  height: 100%;
+  width: 0%;
+  background: white;
+  border-radius: 2px;
+  animation: boot-progress 2.5s ease-in-out forwards;
+}
+
+@keyframes boot-progress {
+  0%   { width: 0%; }
+  30%  { width: 40%; }
+  60%  { width: 70%; }
+  85%  { width: 90%; }
+  100% { width: 100%; }
+}
+
+#boot-screen.boot-done {
+  opacity: 0;
+  transition: opacity 1s ease !important;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   OS Shell Layout
+   --------------------------------------------------------------------------- */
+
+#os-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* ---------------------------------------------------------------------------
+   Menu Bar
+   --------------------------------------------------------------------------- */
+
+#menubar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 26px;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  background: var(--menubar-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: white;
+}
+
+#menubar-left {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+#menubar-right {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 6px;
+  padding-right: 4px;
+  font-size: 12px;
+  color: white;
+}
+
+.menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  height: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: white;
+  font-size: 13px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.menu-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+#menu-apple {
+  padding: 0 10px;
+}
+
+.menu-app-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: white;
+  padding: 0 6px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+#menubar-app-menus {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0 2px;
+  color: white;
+  fill: white;
+  height: 100%;
+}
+
+.status-icon svg {
+  display: block;
+}
+
+#menubar-clock {
+  font-size: 12px;
+  color: white;
+  cursor: pointer;
+  padding: 0 6px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+#menubar-clock:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   Desktop
+   --------------------------------------------------------------------------- */
+
+#desktop {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: var(--wallpaper);
+  background-attachment: fixed;
+  background-size: cover;
+  /* Push content below menubar */
+  margin-top: 26px;
+}
+
+#desktop-icons {
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 16px;
+}
+
+/* Desktop Icons */
+.desktop-icon {
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  user-select: none;
+}
+
+.desktop-icon .icon-img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.desktop-icon .icon-label {
+  font-size: 11px;
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  text-align: center;
+  margin-top: 4px;
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.desktop-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.desktop-icon.selected {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ---------------------------------------------------------------------------
+   Dock
+   --------------------------------------------------------------------------- */
+
+#dock {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 8px;
+  position: relative;
+  z-index: 4000;
+}
+
+#dock-inner {
+  display: inline-flex;
+  align-items: flex-end;
+  padding: 8px 12px;
+  background: var(--dock-bg);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  gap: 6px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+#dock-apps {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+
+.dock-item:hover {
+  transform: translateY(-6px) scale(1.12);
+}
+
+.dock-icon-wrap {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dock-icon-wrap svg,
+.dock-icon-wrap img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.dock-label {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 2px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.dock-item:hover .dock-label {
+  opacity: 1;
+}
+
+.dock-running-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: white;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dock-sep {
+  width: 1px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.3);
+  margin: 0 4px;
+  align-self: center;
+}
+
+/* ---------------------------------------------------------------------------
+   Window Layer
+   --------------------------------------------------------------------------- */
+
+#window-layer {
+  position: fixed;
+  inset: 26px 0 70px 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+#window-layer .window {
+  pointer-events: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Windows
+   --------------------------------------------------------------------------- */
+
+.window {
+  position: absolute;
+  background: var(--window-body);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  min-width: 300px;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  animation: wopen 0.2s ease-out;
+}
+
+.window.focused {
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+}
+
+.window:not(.focused) .window-titlebar {
+  opacity: 0.8;
+}
+
+.window.minimizing {
+  animation: wclose 0.2s ease-in forwards;
+}
+
+@keyframes wopen {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes wclose {
+  to {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+/* Window Titlebar */
+.window-titlebar {
+  height: 38px;
+  background: var(--window-titlebar);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  cursor: move;
+  user-select: none;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* Traffic Lights */
+.window-traffic-lights {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.traffic-light {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.traffic-light:hover {
+  filter: brightness(0.85);
+}
+
+.tl-close  { background: #ff5f57; }
+.tl-min    { background: #febc2e; }
+.tl-max    { background: #28c840; }
+
+.tl-icon {
+  opacity: 0;
+  font-size: 9px;
+  line-height: 13px;
+  text-align: center;
+  display: block;
+  color: rgba(0, 0, 0, 0.6);
+  font-style: normal;
+}
+
+.window-titlebar:hover .tl-icon {
+  opacity: 1;
+}
+
+/* Window Title */
+.window-title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  pointer-events: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Window Toolbar (optional, app-specific) */
+.window-toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  gap: 6px;
+  height: 36px;
+  border-bottom: 1px solid var(--border);
+  background: var(--window-titlebar);
+  flex-shrink: 0;
+}
+
+/* Window Body */
+.window-body {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+/* ---------------------------------------------------------------------------
+   Window Resize Handles
+   --------------------------------------------------------------------------- */
+
+.resize-handle {
+  position: absolute;
+  z-index: 10;
+}
+
+.resize-n  { top: 0;    left: 4px;   right: 4px;  height: 4px; cursor: n-resize; }
+.resize-s  { bottom: 0; left: 4px;   right: 4px;  height: 4px; cursor: s-resize; }
+.resize-e  { right: 0;  top: 4px;    bottom: 4px; width: 4px;  cursor: e-resize; }
+.resize-w  { left: 0;   top: 4px;    bottom: 4px; width: 4px;  cursor: w-resize; }
+.resize-ne { top: 0;    right: 0;    width: 8px;  height: 8px; cursor: ne-resize; }
+.resize-nw { top: 0;    left: 0;     width: 8px;  height: 8px; cursor: nw-resize; }
+.resize-se { bottom: 0; right: 0;    width: 8px;  height: 8px; cursor: se-resize; }
+.resize-sw { bottom: 0; left: 0;     width: 8px;  height: 8px; cursor: sw-resize; }
+
+/* ---------------------------------------------------------------------------
+   Dropdown & Context Menus
+   --------------------------------------------------------------------------- */
+
+#dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7999;
+  display: none;
+}
+
+.dropdown-menu,
+#ctx-menu,
+#dropdown-menu {
+  position: fixed;
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 160px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  z-index: 8000;
+}
+
+#ctx-menu,
+#dropdown-menu {
+  display: none;
+}
+
+.menu-item {
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.menu-item:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.menu-separator {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.menu-item.disabled {
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Notifications
+   --------------------------------------------------------------------------- */
+
+#notifications {
+  position: fixed;
+  top: 36px;
+  right: 12px;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.notif {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 16px;
+  min-width: 300px;
+  max-width: 350px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  animation: notif-in 0.3s ease-out;
+  pointer-events: auto;
+}
+
+.notif.notif-out {
+  animation: notif-out 0.3s ease-in forwards;
+}
+
+@keyframes notif-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes notif-out {
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.notif-icon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.notif-msg {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.notif-close {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+}
+
+.notif-close:hover {
+  color: var(--text);
+}
+
+/* ---------------------------------------------------------------------------
+   Calendar Popover
+   --------------------------------------------------------------------------- */
+
+#cal-popover {
+  position: fixed;
+  top: 30px;
+  right: 0;
+  width: 280px;
+  background: var(--surface);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  z-index: 8500;
+  display: none;
+}
+
+#cal-popover.visible {
+  display: block;
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cal-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cal-nav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.cal-nav:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-dow {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 2px 0 4px;
+}
+
+.cal-day {
+  font-size: 12px;
+  text-align: center;
+  padding: 4px 2px;
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.cal-day:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.cal-day.today {
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+.cal-day.other-month {
+  color: var(--text-secondary);
+}
+
+.cal-time {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 200;
+  color: var(--text);
+  margin-top: 12px;
+  letter-spacing: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   App Styles: Finder
+   --------------------------------------------------------------------------- */
+
+.finder-wrap {
+  display: flex;
+  height: 100%;
+}
+
+.finder-sidebar {
+  width: 160px;
+  background: rgba(0, 0, 0, 0.05);
+  border-right: 1px solid var(--border);
+  padding: 8px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.finder-sidebar-section {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  margin-top: 8px;
+}
+
+.finder-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.finder-sidebar-item:hover,
+.finder-sidebar-item.active {
+  background: var(--accent);
+  color: white;
+}
+
+.finder-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.finder-toolbar {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.finder-toolbar button {
+  padding: 3px 10px;
+  border-radius: 5px;
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.finder-toolbar button:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.finder-breadcrumb {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.finder-content {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.finder-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-content: flex-start;
+}
+
+.finder-icon {
+  width: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.finder-icon:hover {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.finder-icon.selected {
+  background: rgba(0, 122, 255, 0.2);
+}
+
+.finder-icon .fi-icon {
+  font-size: 36px;
+  line-height: 1;
+}
+
+.finder-icon .fi-name {
+  font-size: 11px;
+  text-align: center;
+  max-width: 78px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.finder-list {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.finder-list th {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: left;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.finder-list td {
+  font-size: 13px;
+  padding: 4px 8px;
+  color: var(--text);
+}
+
+.finder-list tr:hover td {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+/* ---------------------------------------------------------------------------
+   App Styles: Terminal
+   --------------------------------------------------------------------------- */
+
+.terminal-wrap {
+  height: 100%;
+  background: #1a1a1a;
+  color: #f0f0f0;
+  font-family: 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-size: 13px;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.terminal-output {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.terminal-line {
+  line-height: 1.5;
+}
+
+.terminal-line.error   { color: #ff6b6b; }
+.terminal-line.success { color: #4cd964; }
+.terminal-line.info    { color: #64d8ff; }
+.terminal-line.warn    { color: #ffd60a; }
+
+.terminal-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 4px;
+}
+
+.terminal-prompt {
+  color: #4cd964;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.terminal-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f0f0f0;
+  font-family: inherit;
+  font-size: inherit;
+  caret-color: #f0f0f0;
+}
+
+/* ---------------------------------------------------------------------------
+   App Styles: Browser
+   --------------------------------------------------------------------------- */
+
+.browser-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.browser-tabs {
+  height: 34px;
+  background: var(--surface);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 8px;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.browser-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px 8px 0 0;
+  font-size: 12px;
+  cursor: pointer;
+  background: var(--surface-solid);
+  color: var(--text);
+  max-width: 160px;
+  overflow: hidden;
+}
+
+.browser-tab.active {
+  background: white;
+}
+
+[data-theme="dark"] .browser-tab.active {
+  background: var(--surface-solid);
+}
+
+.browser-tab-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.browser-tab-close {
+  opacity: 0.5;
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.browser-tab:hover .browser-tab-close {
+  opacity: 1;
+}
+
+.browser-tab-add {
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.browser-toolbar {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.browser-toolbar button {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.browser-toolbar button:hover {
+  background: var(--surface-solid);
+}
+
+.browser-url {
+  flex: 1;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0 10px;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+}
+
+.browser-url:focus {
+  border-color: var(--accent);
+}
+
+.browser-viewport {
+  flex: 1;
+  overflow: auto;
+  background: white;
+}
+
+[data-theme="dark"] .browser-viewport {
+  background: #1c1c1e;
+}
+
+.browser-page {
+  padding: 20px;
+  color: #1c1c1e;
+  font-family: -apple-system, sans-serif;
+}
+
+[data-theme="dark"] .browser-page {
+  color: #f2f2f7;
+}
+
+.browser-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ---------------------------------------------------------------------------
+   App Styles: Music Player
+   --------------------------------------------------------------------------- */
+
+.music-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 16px;
+  background: var(--window-body);
+  height: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.music-disc {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #ff6b6b);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.music-disc::after {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--window-body);
+}
+
+.music-disc.spinning {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.music-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}
+
+.music-artist {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.music-progress-wrap {
+  width: 100%;
+}
+
+.music-progress {
+  width: 100%;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.music-progress::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.music-progress::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+.music-time {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.music-controls {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.music-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 24px;
+  color: var(--text);
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.music-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .music-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.music-btn.play-pause {
+  font-size: 36px;
+  color: var(--accent);
+}
+
+.music-vol-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.music-vol-icon {
+  font-size: 14px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.music-vol {
+  flex: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.music-vol::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.music-vol::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+/* ---------------------------------------------------------------------------
+   App Styles: Settings
+   --------------------------------------------------------------------------- */
+
+.settings-wrap {
+  display: flex;
+  height: 100%;
+}
+
+.settings-sidebar {
+  width: 180px;
+  background: rgba(0, 0, 0, 0.04);
+  border-right: 1px solid var(--border);
+  padding: 10px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+[data-theme="dark"] .settings-sidebar {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.settings-nav-item {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-nav-item:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] .settings-nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.settings-nav-item.active {
+  background: var(--accent);
+  color: white;
+}
+
+.settings-nav-icon {
+  font-size: 18px;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.settings-main {
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+}
+
+.settings-section {
+  margin-bottom: 24px;
+}
+
+.settings-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row-label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+/* Toggle Switch */
+.toggle {
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: #8e8e93;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  border: none;
+  outline: none;
+}
+
+.toggle.on {
+  background: var(--accent);
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.toggle.on::after {
+  transform: translateX(18px);
+}
+
+/* Color Swatches */
+.color-swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.color-swatch.selected {
+  border-color: white;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+/* Wallpaper Grid */
+.wallpaper-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.wp-thumb {
+  height: 60px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.wp-thumb.selected {
+  border-color: var(--accent);
+}
+
+/* About Mac section */
+.about-mac {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.about-mac .about-logo {
+  font-size: 60px;
+  text-align: center;
+  padding: 20px;
+}
+
+.about-mac table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.about-mac td {
+  padding: 6px 0;
+}
+
+.about-mac td:first-child {
+  color: var(--text-secondary);
+  width: 140px;
+}
+
+/* ---------------------------------------------------------------------------
+   App Styles: Notes
+   --------------------------------------------------------------------------- */
+
+.notes-wrap {
+  display: flex;
+  height: 100%;
+}
+
+.notes-sidebar {
+  width: 200px;
+  border-right: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .notes-sidebar {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.notes-sidebar-header {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notes-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.notes-list-item {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.notes-list-item:hover {
+  background: rgba(0, 122, 255, 0.08);
+}
+
+.notes-list-item.active {
+  background: rgba(0, 122, 255, 0.15);
+}
+
+.notes-list-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notes-list-item-preview {
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.notes-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-editor-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.notes-textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 16px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--window-body);
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+/* ---------------------------------------------------------------------------
+   App Styles: Calculator
+   --------------------------------------------------------------------------- */
+
+.calc-wrap {
+  background: #1c1c1e;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 8px;
+}
+
+.calc-display {
+  padding: 12px 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.calc-expression {
+  font-size: 14px;
+  color: #636366;
+  min-height: 20px;
+}
+
+.calc-result {
+  font-size: 42px;
+  font-weight: 200;
+  color: white;
+  letter-spacing: -1px;
+}
+
+.calc-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  flex: 1;
+}
+
+.calc-btn {
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  font-weight: 400;
+}
+
+.calc-btn.fn  { background: #636366; color: white; }
+.calc-btn.op  { background: #ff9500; color: white; }
+.calc-btn.num { background: #333; color: white; }
+.calc-btn.zero { grid-column: span 2; border-radius: 24px; aspect-ratio: auto; padding: 0 28px; justify-content: flex-start; }
+
+.calc-btn:hover { filter: brightness(1.2); }
+.calc-btn:active { filter: brightness(0.85); }
+
+/* ---------------------------------------------------------------------------
+   Scrollbar Styling
+   --------------------------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.4);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.6);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(200, 200, 200, 0.2);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 200, 200, 0.35);
+}
+
+/* ---------------------------------------------------------------------------
+   Utility / Misc
+   --------------------------------------------------------------------------- */
+
+/* Hide elements */
+.hidden { display: none !important; }
+
+/* Selection */
+::selection {
+  background: rgba(0, 122, 255, 0.3);
+}
+
+/* Spinner */
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: rotate 0.7s linear infinite;
+}
+
+/* Spotlight / Search overlay */
+#spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+}
+
+.spotlight-box {
+  width: 580px;
+  background: var(--surface);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.spotlight-input-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.spotlight-icon {
+  font-size: 20px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.spotlight-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.spotlight-results {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.spotlight-result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.spotlight-result:hover,
+.spotlight-result.selected {
+  background: var(--accent);
+  color: white;
+}
+
+.spotlight-result-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.spotlight-result-name {
+  font-weight: 500;
+}
+
+.spotlight-result-sub {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 1px;
+}
